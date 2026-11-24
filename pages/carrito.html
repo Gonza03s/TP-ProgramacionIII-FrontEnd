@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../css/styless.css" />
     <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
     <script src="../js/carrito.js" defer></script>
     <title>Carrito</title>
   </head>
@@ -55,7 +56,22 @@
         </div>
       </section>
       
+      <section>
+        <div class="buttons-container">
+
+          <div class="btn-container-ticket">
+            <button id="btn-ticket" type="button">Imprimir Ticket</button>
+          </div>
+          
+          <div class="btn-container-excel">
+            <button id="btn-excel" type="button">Exportar Excel</button>
+          </div>
+
+        </div>
+
+      </section>
 
     </main>
   </body>
 </html>
+

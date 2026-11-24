@@ -1,10 +1,15 @@
 
 const cuerpoTabla = document.getElementById("cuerpo-tabla");
 const MontoHtml = document.getElementById("montoTotal");
-let carrito = JSON.parse(localStorage.getItem("carrito")) || []; 
 
-//estilar carrito-tabla, funcionalidad cambiar cantidad, eliminar y total + jspdf + exceljs
-//estilizar carrito, borrar producto del localStorage y cambiar cantidad
+const btnTicket = document.getElementById("btn-ticket");
+const btnExcel = document.getElementById("btn-excel");
+
+let nombreUsuario = sessionStorage.getItem("nombreUsuario");
+let carrito = JSON.parse(localStorage.getItem("carrito")) || []; 
+const URL_BASE = "http://localhost:25565";
+
+
 
 const renderizarCarrito = () => {
 
@@ -44,7 +49,6 @@ const renderizarCarrito = () => {
     inputsCantidad.forEach(btn=> btn.addEventListener("change", e=> cambiarCantidad(e) ) );
 
 }
-
 
 const cambiarCantidad=(event)=>{
 
@@ -87,24 +91,123 @@ const eliminarProducto = (event) =>{
     // tomar el id, mediante filter sacar el prod, guardar en storage y actualizar vista
 }
 
-
-
-
-
-
-
-
-
 const mostrarMensaje=(mensaje)=>{
-    cuerpoTabla.innerHTML = `<p>${mensaje}</p>`;
+    cuerpoTabla.innerHTML = `
+    <div class="mensaje-container-carrito">
+        <p class="mensaje-tabla">${mensaje}</p>
+    </div>
+    `;
 }
-
 
 const guardarEnStorage=(nombre,valor)=>{
     localStorage.setItem(nombre, JSON.stringify(valor));
 }
 
 
+const registrarBotones=()=>{
+    btnTicket.addEventListener("click", () => imprimirTicket());
+    btnExcel.addEventListener("click", () =>console.log("hizo click en el boton excel"));
+}
+
+
+const imprimirTicket=()=>{
+
+    const idProducts = []; //arr para registrar el producto hizo la venta/secompro
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let y = 20;
+
+    doc.setFontSize(20);
+    doc.text("Ticket de compra: ",20,y); //titulo ticket
+
+    y += 20;
+
+    doc.setFontSize(14);
+
+    carrito.forEach(prod =>{
+        idProducts.push(prod.id) //para crear la venta
+        doc.text(`${prod.name} - ${prod.price}`, 20, y);
+        y += 10;
+    })
+
+    const precioTotal = carrito.reduce((acumulador,producto)=> acumulador + parseInt(producto.price),0)
+
+    y += 10 //separar producto del total
+
+
+    doc.text(`TOTAL: $${precioTotal}`, 20, y);
+    const fecha = new Date();
+    const nombreTicket = `${nombreUsuario}_${fecha.toISOString()}`;
+
+    doc.save(`ticket-${nombreTicket}.pdf`);
+    
+    //registrar una venta
+    registrarVenta(precioTotal, idProducts);
+}
+
+// implementar->desarrollo lado del servidor registrar venta
+
+const registrarVenta = async (precioTotal, idProductos)=>{
+
+    try {
+
+        // tabla (sales) necesitara nombreUsuario, precioTotal y fecha
+        const fecha = new Date();
+
+        // El ISOString trae la hora de UTC, tenemos que pasarla a hora Argentina
+        const fechaArgentinaISO = new Intl.DateTimeFormat("sv-SE", {
+            timeZone: "America/Argentina/Buenos_Aires",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hourCycle: "h23"
+        }).format(fecha);
+        
+        // correcion formato de fecha que acepte mysql
+        const fechaFormato = fechaArgentinaISO.slice(0, 19);
+
+        const data ={
+            date: fechaFormato,
+            total_price: precioTotal,
+            user_name: nombreUsuario,
+            products: idProductos //arr contiene ids de los prods
+        }
+
+        const response = await fetch(`${URL_BASE}/api/sales`,{
+            method:"POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if(response.ok){
+
+            console.log("datos enviados: ", result.message);
+            alert("venta registrada: ", result.message);
+
+            //una vez concretada la venta es redirige al login, destruyendo la session del user
+            sessionStorage.removeItem(nombreUsuario);
+            window.location.href="../index.html";  
+
+        }
+        else{
+            console.log("Error en la venta: ", result.message);
+            alert("Error en la venta: ", result.message)
+        }
+
+    } catch (error) {
+        console.log("Error al mandarle datos al back", error);
+        alert("error en el envio de la solicitud")
+    }
+
+
+}
 
 
 
@@ -112,6 +215,7 @@ const guardarEnStorage=(nombre,valor)=>{
 
 const init=()=>{
     renderizarCarrito();
+    registrarBotones();
 }
 
 

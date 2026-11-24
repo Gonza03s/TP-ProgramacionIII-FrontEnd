@@ -283,8 +283,36 @@ th {
     font-weight: bold;
 }
 
+.buttons-container{
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+#btn-ticket, #btn-excel{
+  border-radius: 6px;
+  padding: 8px 12px;
+  background-color: rgb(130, 193, 227);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+#btn-ticket:hover, #btn-excel:hover{
+  background-color: rgb(55, 156, 207);
+}
 
 
+.mensaje-container-carrito{
+  font-size: 1.2rem;
+}
 
 
 
