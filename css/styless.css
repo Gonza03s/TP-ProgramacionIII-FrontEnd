@@ -1,6 +1,6 @@
 @font-face {
   font-family: "dm-sans";
-  src: url("../fonts/DMSans-VariableFont_opsz\,wght.ttf");
+  src: url("../assets/fonts/DMSans-VariableFont_opsz\,wght.ttf");
 }
 
 * {
@@ -219,59 +219,71 @@ main {
 ==================
 */
 
-#table-section{
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.table-container {
+    overflow-x: auto;
 }
 
-.table-container{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-  border: 1px solid red;
-  overflow-x: auto;
-
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
 }
 
-.table-container table{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-
-  
-  border-collapse: collapse;
+th,
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
 }
 
-thead th{
-  padding: 1rem;
+th {
+    background: #f3f4f6;
+    font-size: 0.9rem;
 }
 
-tbody td{
-  padding: 1.3rem;
-
+.img-product-table {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
 }
 
-.input-cantidad{
-  width: 30px;
+.input-cantidad {
+    width: 64px;
+    padding: 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
 }
 
-.img-product-table{
-  width: 50px;
-  border-radius: 12px;
+.table-btn-eliminar {
+    color: #dc2626;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px 8px;
 }
 
-.table-btn-eliminar{
-  color: red;
-  border: 1px solid red;
-  border-radius: 20px;
-  padding: 4px 6px;
-  cursor: pointer;
+.table-btn-eliminar:hover {
+    background: #fee2e2;
+    border-radius: 6px;
 }
+
+.total-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+#montoTotal p {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+
 
 
 

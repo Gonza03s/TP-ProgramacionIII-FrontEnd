@@ -1,5 +1,6 @@
 
 const cuerpoTabla = document.getElementById("cuerpo-tabla");
+const MontoHtml = document.getElementById("montoTotal");
 let carrito = JSON.parse(localStorage.getItem("carrito")) || []; 
 
 //estilar carrito-tabla, funcionalidad cambiar cantidad, eliminar y total + jspdf + exceljs
@@ -7,6 +8,8 @@ let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
 const renderizarCarrito = () => {
 
+    let total = 0;
+    let subtotal = 0;
     let html="";
 
     if(carrito.length === 0){
@@ -14,7 +17,8 @@ const renderizarCarrito = () => {
     }
     
     carrito.forEach(prod =>{
-        let total = prod.cantidad * prod.price
+        subtotal = prod.cantidad * prod.price
+        total += prod.cantidad * prod.price;
         html += `
             <tr>
                 <td> <span data-id="${prod.id}" class="table-btn-eliminar"> X </span> </td>
@@ -24,13 +28,14 @@ const renderizarCarrito = () => {
                 <td>
                     <input data-id="${prod.id}" type="number" name="" class="input-cantidad" value="${prod.cantidad}" min="1">
                 </td>
-                <td>${total}</td>
+                <td>${subtotal.toFixed(2)}</td>
             </tr>
         
         `;
     })
 
     cuerpoTabla.innerHTML = html;
+    MontoHtml.innerHTML = `<p>${total.toFixed(2)}</p>`
 
     const btnEliminar = document.querySelectorAll(".table-btn-eliminar");
     btnEliminar.forEach(btn=> btn.addEventListener("click", e=> eliminarProducto(e) ) );

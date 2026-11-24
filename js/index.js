@@ -10,7 +10,7 @@ const capturarEnvioFormulario = () => {
 
     if (nombreUsuario.length > 2) {
       sessionStorage.setItem("nombreUsuario", nombreUsuario);
-      window.location.href = "productos.html";
+      window.location.href = "pages/productos.html";
     }
   });
 };
