@@ -10,7 +10,6 @@ let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 const URL_BASE = "http://localhost:25565";
 
 
-
 const renderizarCarrito = () => {
 
     let total = 0;
@@ -106,8 +105,13 @@ const guardarEnStorage=(nombre,valor)=>{
 
 const registrarBotones=()=>{
     btnTicket.addEventListener("click", () => imprimirTicket());
-    btnExcel.addEventListener("click", () =>console.log("hizo click en el boton excel"));
+    btnExcel.addEventListener("click", () => exportarExcel());
 }
+
+
+const exportarExcel = () => {
+  window.location.href = `${URL_BASE}/export/products`;
+};
 
 
 const imprimirTicket=()=>{
@@ -147,7 +151,6 @@ const imprimirTicket=()=>{
     registrarVenta(precioTotal, idProducts);
 }
 
-// implementar->desarrollo lado del servidor registrar venta
 
 const registrarVenta = async (precioTotal, idProductos)=>{
 
@@ -178,6 +181,8 @@ const registrarVenta = async (precioTotal, idProductos)=>{
             products: idProductos //arr contiene ids de los prods
         }
 
+        console.log(data);
+
         const response = await fetch(`${URL_BASE}/api/sales`,{
             method:"POST",
             headers: {"Content-Type":"application/json"},
@@ -189,7 +194,7 @@ const registrarVenta = async (precioTotal, idProductos)=>{
         if(response.ok){
 
             console.log("datos enviados: ", result.message);
-            alert("venta registrada: ", result.message);
+            alert(`Venta registrada: ${result.message}`);
 
             //una vez concretada la venta es redirige al login, destruyendo la session del user
             sessionStorage.removeItem(nombreUsuario);
@@ -208,8 +213,6 @@ const registrarVenta = async (precioTotal, idProductos)=>{
 
 
 }
-
-
 
 
 
