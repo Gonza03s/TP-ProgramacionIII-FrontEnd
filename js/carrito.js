@@ -6,23 +6,31 @@ const btnTicket = document.getElementById("btn-ticket");
 const btnExcel = document.getElementById("btn-excel");
 
 let nombreUsuario = sessionStorage.getItem("nombreUsuario");
-let carrito = JSON.parse(localStorage.getItem("carrito")) || []; 
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 const URL_BASE = "http://localhost:25565";
+
+// cupon de descuento
+const inputCupon = document.getElementById("input-cupon");
+const btnCupon = document.getElementById("btn-cupon");
+const mensajeCupon = document.getElementById("mensaje-cupon");
+
+const CODIGO_CUPON = "BLACKFRIDAY";
+const PORCENTAJE_DESCUENTO = 35;
+let descuentoAplicado = false;
 
 
 const renderizarCarrito = () => {
 
-    let total = 0;
     let subtotal = 0;
-    let html="";
+    let html = "";
 
-    if(carrito.length === 0){
+    if (carrito.length === 0) {
+        MontoHtml.innerHTML = "";
         return mostrarMensaje("No hay productos");
     }
-    
-    carrito.forEach(prod =>{
+
+    carrito.forEach(prod => {
         subtotal = prod.cantidad * prod.price
-        total += prod.cantidad * prod.price;
         html += `
             <tr>
                 <td> <span data-id="${prod.id}" class="table-btn-eliminar"> X </span> </td>
@@ -39,22 +47,22 @@ const renderizarCarrito = () => {
     })
 
     cuerpoTabla.innerHTML = html;
-    MontoHtml.innerHTML = `<p>${total.toFixed(2)}</p>`
+    mostrarTotal();
 
     const btnEliminar = document.querySelectorAll(".table-btn-eliminar");
-    btnEliminar.forEach(btn=> btn.addEventListener("click", e=> eliminarProducto(e) ) );
+    btnEliminar.forEach(btn => btn.addEventListener("click", e => eliminarProducto(e)));
 
     const inputsCantidad = document.querySelectorAll(".input-cantidad");
-    inputsCantidad.forEach(btn=> btn.addEventListener("change", e=> cambiarCantidad(e) ) );
+    inputsCantidad.forEach(btn => btn.addEventListener("change", e => cambiarCantidad(e)));
 
 }
 
-const cambiarCantidad=(event)=>{
+const cambiarCantidad = (event) => {
 
     const idProd = Number(event.target.getAttribute("data-id"));
     const nuevaCantidad = Number(event.target.value);
 
-    if(nuevaCantidad < 1 || Number.isNaN(nuevaCantidad)){
+    if (nuevaCantidad < 1 || Number.isNaN(nuevaCantidad)) {
         alert("La cantidad no puede ser inferior a 1")
         renderizarCarrito();
         return;
@@ -62,7 +70,7 @@ const cambiarCantidad=(event)=>{
 
     const productoEncontrado = carrito.find(prod => prod.id === idProd);
 
-    if(productoEncontrado){
+    if (productoEncontrado) {
         productoEncontrado.cantidad = nuevaCantidad;
         guardarEnStorage("carrito", carrito);
         renderizarCarrito();
@@ -74,23 +82,71 @@ const cambiarCantidad=(event)=>{
     //guardar en storage, y renderizar
 }
 
-const eliminarProducto = (event) =>{
+const eliminarProducto = (event) => {
 
     const idProd = Number(event.target.getAttribute("data-id"));
 
-    console.log("antes carrito",carrito);
-    
+    console.log("antes carrito", carrito);
+
     carrito = carrito.filter(prod => prod.id !== idProd); // al no ser diferentes no guarda el prodx
 
-    console.log("despues carrito",carrito);
-    guardarEnStorage("carrito",carrito)
+    console.log("despues carrito", carrito);
+    guardarEnStorage("carrito", carrito)
     renderizarCarrito();
 
     //proposito funcion
     // tomar el id, mediante filter sacar el prod, guardar en storage y actualizar vista
 }
 
-const mostrarMensaje=(mensaje)=>{
+// suma precio x cantidad de todos los productos
+const calcularTotal = () => {
+    return carrito.reduce((acumulador, prod) => acumulador + Number(prod.price) * prod.cantidad, 0);
+}
+
+// total con el descuento del cupon si esta aplicado
+const calcularTotalFinal = () => {
+    const total = calcularTotal();
+
+    if (descuentoAplicado) {
+        return total - (total * PORCENTAJE_DESCUENTO / 100);
+    }
+    return total;
+}
+
+// muestra el total, y si hay cupon el precio anterior tachado
+const mostrarTotal = () => {
+    const total = calcularTotal();
+    const totalFinal = calcularTotalFinal();
+
+    if (descuentoAplicado) {
+        MontoHtml.innerHTML = `
+            <p class="precio-tachado">$${total.toFixed(2)}</p>
+            <p class="descuento">-${PORCENTAJE_DESCUENTO}% ${CODIGO_CUPON}</p>
+            <p>$${totalFinal.toFixed(2)}</p>
+        `;
+    } else {
+        MontoHtml.innerHTML = `<p>$${total.toFixed(2)}</p>`;
+    }
+}
+
+// valida el codigo ingresado
+const aplicarCupon = () => {
+    const codigo = inputCupon.value.trim().toUpperCase();
+
+    if (codigo === CODIGO_CUPON) {
+        descuentoAplicado = true;
+        mensajeCupon.textContent = `¡Cupón aplicado! ${PORCENTAJE_DESCUENTO}% de descuento`;
+        mensajeCupon.className = "cupon-ok";
+    } else {
+        descuentoAplicado = false;
+        mensajeCupon.textContent = "Cupón inválido";
+        mensajeCupon.className = "cupon-error";
+    }
+
+    mostrarTotal();
+}
+
+const mostrarMensaje = (mensaje) => {
     cuerpoTabla.innerHTML = `
     <div class="mensaje-container-carrito">
         <p class="mensaje-tabla">${mensaje}</p>
@@ -98,23 +154,31 @@ const mostrarMensaje=(mensaje)=>{
     `;
 }
 
-const guardarEnStorage=(nombre,valor)=>{
+const guardarEnStorage = (nombre, valor) => {
     localStorage.setItem(nombre, JSON.stringify(valor));
 }
 
 
-const registrarBotones=()=>{
+const registrarBotones = () => {
     btnTicket.addEventListener("click", () => imprimirTicket());
     btnExcel.addEventListener("click", () => exportarExcel());
+    btnCupon.addEventListener("click", () => aplicarCupon());
 }
 
 
 const exportarExcel = () => {
-  window.location.href = `${URL_BASE}/export/products`;
+    window.location.href = `${URL_BASE}/export/products`;
 };
 
 
-const imprimirTicket=()=>{
+const imprimirTicket = () => {
+
+    // si no hay productos no se imprime nada
+    if (carrito.length === 0) {
+        // el famoso return corta la funcion si esta el carrito vacio
+        return alert("El carrito está vacío");
+    }
+
 
     const idProducts = []; //arr para registrar el producto hizo la venta/secompro
 
@@ -124,35 +188,40 @@ const imprimirTicket=()=>{
     let y = 20;
 
     doc.setFontSize(20);
-    doc.text("Ticket de compra: ",20,y); //titulo ticket
+    doc.text("Ticket de compra: ", 20, y); //titulo ticket
 
     y += 20;
 
     doc.setFontSize(14);
 
-    carrito.forEach(prod =>{
+    carrito.forEach(prod => {
         idProducts.push(prod.id) //para crear la venta
-        doc.text(`${prod.name} - ${prod.price}`, 20, y);
+        doc.text(`${prod.name} x${prod.cantidad} - $${(prod.price * prod.cantidad).toFixed(2)}`, 20, y);
         y += 10;
     })
 
-    const precioTotal = carrito.reduce((acumulador,producto)=> acumulador + parseInt(producto.price),0)
+    // total con cantidades y descuento
+    const precioTotal = Number(calcularTotalFinal().toFixed(2));
 
     y += 10 //separar producto del total
 
+    if (descuentoAplicado) {
+        doc.text(`Descuento ${CODIGO_CUPON}: -${PORCENTAJE_DESCUENTO}%`, 20, y);
+        y += 10;
+    }
 
     doc.text(`TOTAL: $${precioTotal}`, 20, y);
     const fecha = new Date();
     const nombreTicket = `${nombreUsuario}_${fecha.toISOString()}`;
 
     doc.save(`ticket-${nombreTicket}.pdf`);
-    
+
     //registrar una venta
     registrarVenta(precioTotal, idProducts);
 }
 
 
-const registrarVenta = async (precioTotal, idProductos)=>{
+const registrarVenta = async (precioTotal, idProductos) => {
 
     try {
 
@@ -170,11 +239,11 @@ const registrarVenta = async (precioTotal, idProductos)=>{
             second: "2-digit",
             hourCycle: "h23"
         }).format(fecha);
-        
+
         // correcion formato de fecha que acepte mysql
         const fechaFormato = fechaArgentinaISO.slice(0, 19);
 
-        const data ={
+        const data = {
             date: fechaFormato,
             total_price: precioTotal,
             user_name: nombreUsuario,
@@ -183,27 +252,28 @@ const registrarVenta = async (precioTotal, idProductos)=>{
 
         console.log(data);
 
-        const response = await fetch(`${URL_BASE}/api/sales`,{
-            method:"POST",
-            headers: {"Content-Type":"application/json"},
+        const response = await fetch(`${URL_BASE}/api/sales`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         });
 
         const result = await response.json();
 
-        if(response.ok){
+        if (response.ok) {
 
             console.log("datos enviados: ", result.message);
             alert(`Venta registrada: ${result.message}`);
 
-            //una vez concretada la venta es redirige al login, destruyendo la session del user
-            sessionStorage.removeItem(nombreUsuario);
-            window.location.href="../index.html";  
+            //una vez concretada la venta es redirige al login, destruyendo la session del user y limpiamos el carrito
+            sessionStorage.removeItem("nombreUsuario");
+            localStorage.removeItem("carrito");
+            window.location.href = "../index.html";
 
         }
-        else{
+        else {
             console.log("Error en la venta: ", result.message);
-            alert("Error en la venta: ", result.message)
+            alert(`Error en la venta: ${result.message}`);
         }
 
     } catch (error) {
@@ -216,7 +286,7 @@ const registrarVenta = async (precioTotal, idProductos)=>{
 
 
 
-const init=()=>{
+const init = () => {
     renderizarCarrito();
     registrarBotones();
 }
