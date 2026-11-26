@@ -14,7 +14,10 @@
     <header>
       <div class="header-container">
         <div class="logo-container">
-          <img src="../assets/img/logo.png" alt="logo-farmacia" />
+          <!-- el logo vuelve a la lista de productos -->
+          <a href="productos.html">
+            <img src="../assets/img/logo.png" alt="logo-farmacia" />
+          </a>
         </div>
 
         <div class="nav-container">
@@ -48,6 +51,20 @@
         </div>
       </section>
 
+
+      <!-- cupon de descuento -->
+      <section>
+        <div class="cupon-container">
+          <h3>Cupón de descuento</h3>
+
+          <div class="cupon-form">
+            <input type="text" id="input-cupon" placeholder="Ingresá tu cupón">
+            <button type="button" id="btn-cupon">Aplicar</button>
+          </div>
+
+          <p id="mensaje-cupon"></p>
+        </div>
+      </section>
 
       <section>
         <div class="total-container">

@@ -22,6 +22,13 @@ body {
 ==================
 */
 
+/* el header queda fijo arriba al scrollear */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 .header-container {
   display: flex;
   justify-content: space-around;
@@ -191,6 +198,9 @@ main {
 .btn-container {
   width: 100%;
   margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .btn-container button{
@@ -210,6 +220,36 @@ main {
 
 .btn-container button:focus{
   background-color: rgb(121, 142, 191);
+}
+
+/* boton agregar al carrito */
+.btn-container .btn-agregar {
+  background-color: #2e9e6b;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.btn-container .btn-agregar:hover {
+  background-color: rgb(121, 142, 191);
+}
+
+/* contador de productos */
+.contador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contador button {
+  width: 44px;
+  font-size: 1.3rem;
+}
+
+.cantidad {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
 }
 
 
@@ -281,6 +321,67 @@ th {
 #montoTotal p {
     font-size: 1.3rem;
     font-weight: bold;
+}
+
+/* cupon de descuento */
+.cupon-container {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.cupon-form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.cupon-form input {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.cupon-form button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: #2e9e6b;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cupon-form button:hover {
+    background-color: rgb(121, 142, 191);
+}
+
+.cupon-ok {
+    margin-top: 8px;
+    color: #2e9e6b;
+    font-weight: 600;
+}
+
+.cupon-error {
+    margin-top: 8px;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+#montoTotal .precio-tachado {
+    text-decoration: line-through;
+    color: #9ca3af;
+    font-size: 1rem;
+}
+
+#montoTotal .descuento {
+    color: #2e9e6b;
+    font-size: 1rem;
 }
 
 .buttons-container{

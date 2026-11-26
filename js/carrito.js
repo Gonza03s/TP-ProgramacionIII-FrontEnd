@@ -6,23 +6,31 @@ const btnTicket = document.getElementById("btn-ticket");
 const btnExcel = document.getElementById("btn-excel");
 
 let nombreUsuario = sessionStorage.getItem("nombreUsuario");
-let carrito = JSON.parse(localStorage.getItem("carrito")) || []; 
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 const URL_BASE = "http://localhost:25565";
+
+// cupon de descuento
+const inputCupon = document.getElementById("input-cupon");
+const btnCupon = document.getElementById("btn-cupon");
+const mensajeCupon = document.getElementById("mensaje-cupon");
+
+const CODIGO_CUPON = "BLACKFRIDAY";
+const PORCENTAJE_DESCUENTO = 35;
+let descuentoAplicado = false;
 
 
 const renderizarCarrito = () => {
 
-    let total = 0;
     let subtotal = 0;
     let html="";
 
     if(carrito.length === 0){
+        MontoHtml.innerHTML = "";
         return mostrarMensaje("No hay productos");
     }
-    
+
     carrito.forEach(prod =>{
         subtotal = prod.cantidad * prod.price
-        total += prod.cantidad * prod.price;
         html += `
             <tr>
                 <td> <span data-id="${prod.id}" class="table-btn-eliminar"> X </span> </td>
@@ -39,7 +47,7 @@ const renderizarCarrito = () => {
     })
 
     cuerpoTabla.innerHTML = html;
-    MontoHtml.innerHTML = `<p>${total.toFixed(2)}</p>`
+    mostrarTotal();
 
     const btnEliminar = document.querySelectorAll(".table-btn-eliminar");
     btnEliminar.forEach(btn=> btn.addEventListener("click", e=> eliminarProducto(e) ) );
@@ -90,6 +98,54 @@ const eliminarProducto = (event) =>{
     // tomar el id, mediante filter sacar el prod, guardar en storage y actualizar vista
 }
 
+// suma precio x cantidad de todos los productos
+const calcularTotal = () => {
+    return carrito.reduce((acumulador, prod) => acumulador + Number(prod.price) * prod.cantidad, 0);
+}
+
+// total con el descuento del cupon si esta aplicado
+const calcularTotalFinal = () => {
+    const total = calcularTotal();
+
+    if (descuentoAplicado) {
+        return total - (total * PORCENTAJE_DESCUENTO / 100);
+    }
+    return total;
+}
+
+// muestra el total, y si hay cupon el precio anterior tachado
+const mostrarTotal = () => {
+    const total = calcularTotal();
+    const totalFinal = calcularTotalFinal();
+
+    if (descuentoAplicado) {
+        MontoHtml.innerHTML = `
+            <p class="precio-tachado">$${total.toFixed(2)}</p>
+            <p class="descuento">-${PORCENTAJE_DESCUENTO}% ${CODIGO_CUPON}</p>
+            <p>$${totalFinal.toFixed(2)}</p>
+        `;
+    } else {
+        MontoHtml.innerHTML = `<p>$${total.toFixed(2)}</p>`;
+    }
+}
+
+// valida el codigo ingresado
+const aplicarCupon = () => {
+    const codigo = inputCupon.value.trim().toUpperCase();
+
+    if (codigo === CODIGO_CUPON) {
+        descuentoAplicado = true;
+        mensajeCupon.textContent = `¡Cupón aplicado! ${PORCENTAJE_DESCUENTO}% de descuento`;
+        mensajeCupon.className = "cupon-ok";
+    } else {
+        descuentoAplicado = false;
+        mensajeCupon.textContent = "Cupón inválido";
+        mensajeCupon.className = "cupon-error";
+    }
+
+    mostrarTotal();
+}
+
 const mostrarMensaje=(mensaje)=>{
     cuerpoTabla.innerHTML = `
     <div class="mensaje-container-carrito">
@@ -106,6 +162,7 @@ const guardarEnStorage=(nombre,valor)=>{
 const registrarBotones=()=>{
     btnTicket.addEventListener("click", () => imprimirTicket());
     btnExcel.addEventListener("click", () => exportarExcel());
+    btnCupon.addEventListener("click", () => aplicarCupon());
 }
 
 
@@ -132,14 +189,19 @@ const imprimirTicket=()=>{
 
     carrito.forEach(prod =>{
         idProducts.push(prod.id) //para crear la venta
-        doc.text(`${prod.name} - ${prod.price}`, 20, y);
+        doc.text(`${prod.name} x${prod.cantidad} - $${(prod.price * prod.cantidad).toFixed(2)}`, 20, y);
         y += 10;
     })
 
-    const precioTotal = carrito.reduce((acumulador,producto)=> acumulador + parseInt(producto.price),0)
+    // total con cantidades y descuento
+    const precioTotal = Number(calcularTotalFinal().toFixed(2));
 
     y += 10 //separar producto del total
 
+    if (descuentoAplicado) {
+        doc.text(`Descuento ${CODIGO_CUPON}: -${PORCENTAJE_DESCUENTO}%`, 20, y);
+        y += 10;
+    }
 
     doc.text(`TOTAL: $${precioTotal}`, 20, y);
     const fecha = new Date();
